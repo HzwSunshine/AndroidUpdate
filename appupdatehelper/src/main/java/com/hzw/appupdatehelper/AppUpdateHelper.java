@@ -175,7 +175,6 @@ public class AppUpdateHelper {
             @Override public void progress(long currentBytes, long totalBytes, float per) {
                 if (config.updateListener != null) {
                     config.updateListener.progress(currentBytes, totalBytes, per);
-                    Log.i("xxx", "progress: " + per);
                 }
                 if (currentBytes == totalBytes) {
                     //下载完成，安装apk，释放资源
