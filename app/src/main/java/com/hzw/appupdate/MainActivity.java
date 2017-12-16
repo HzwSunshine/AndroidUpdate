@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.hzw.appupdatehelper.AppUpdateHelper;
 import com.hzw.appupdatehelper.UpdateListener;
 
@@ -122,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         //当进度条显示界面销毁的时候，不需要再展示进度时，记得调用下此方法，其实就是unBind一下service
         //activity或fragment中可以在onDestroy（）方法中调用
         //dialog中可以在dialog消失时调用下
-        AppUpdateHelper.getInstance().release(this);
+        AppUpdateHelper.release();
     }
 
 }

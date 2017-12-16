@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.hzw.appupdatehelper.AppUpdateHelper;
 import com.hzw.appupdatehelper.UpdateListener;
 
@@ -22,6 +21,7 @@ public class TestActivity extends AppCompatActivity {
     String url = "http://imtt.dd.qq.com/16891/7259765A7FAE6159A0338A6339CCCB29.apk?fsname=com.hrhb.bdt_3.3.0_15.apk&csr=1bbd";
     private ProgressBar progressBar;
     private TextView show;
+    private String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +29,8 @@ public class TestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         progressBar = findViewById(R.id.progressBar);
         show = findViewById(R.id.progressShow);
+
+        path = getExternalFilesDir("").getPath() + "/xdr33.apk";
 
         findViewById(R.id.download).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,9 +40,12 @@ public class TestActivity extends AppCompatActivity {
             }
         });
 
-        float per = AppUpdateHelper.getInstance().getDownloadProgress(this, url);
+        float per = AppUpdateHelper.getInstance().getDownloadProgress(this, path);
         progressBar.setProgress((int) (per * 100));
         show.setText(String.valueOf((int) (per * 100)));
+        if (per > 0 && per < 1) {
+            checkPermission();
+        }
     }
 
     private void checkPermission() {
@@ -65,7 +70,7 @@ public class TestActivity extends AppCompatActivity {
     private void download() {
         AppUpdateHelper.with(this)
                 .url(url)
-                .filePath(null)
+                .filePath(path)
                 .startTips("开始下载啦")
                 .largeIcon(R.mipmap.ic_launcher)
                 .smallIcon(R.mipmap.ic_launcher)
@@ -93,6 +98,10 @@ public class TestActivity extends AppCompatActivity {
                             case AppUpdateHelper.ERROR_PATH_NOT_VALID:
                                 Toast.makeText(getApplication(), "配置的路径不可用", Toast.LENGTH_SHORT).show();
                                 break;
+                            case AppUpdateHelper.ERROR_STORAGE_LACK:
+                                Toast.makeText(getApplicationContext(), "存储空间不够", Toast.LENGTH_SHORT)
+                                        .show();
+                                break;
                         }
                     }
                 }).update();
@@ -101,7 +110,7 @@ public class TestActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        AppUpdateHelper.getInstance().release(this);
+        AppUpdateHelper.release();
     }
 
 

@@ -1,7 +1,6 @@
 package com.hzw.appupdatehelper;
 
 import java.io.IOException;
-
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import okio.BufferedSource;

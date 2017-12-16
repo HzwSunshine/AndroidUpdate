@@ -10,21 +10,18 @@ import android.text.TextUtils;
  */
 public class UpdateConfig {
 
-    boolean breakPointDownload = true;
     UpdateListener updateListener;
     private Context context;
+    boolean breakPointDownload = true;
     boolean isNotify = true;
     String downloadTips;
     String startTips;
     String filePath;
+    String title;
+    String url;
     int largeIcon;
     int smallIcon;
     int iconColor;
-    String title;
-    String url;
-
-    private UpdateConfig() {
-    }
 
     UpdateConfig(Context context) {
         this.context = context;
@@ -92,8 +89,9 @@ public class UpdateConfig {
         if (TextUtils.isEmpty(url)) {
             throw new IllegalArgumentException("the download url can not be empty!");
         }
-        AppUpdateHelper.getInstance().update(context, this);
+        downloadTips = downloadTips == null ? "正在下载" : downloadTips;
+        AppUpdateHelper.getInstance()
+                .update(context, this);
     }
-
 
 }
