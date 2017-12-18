@@ -1,14 +1,15 @@
 package com.hzw.appupdatehelper;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
-import android.util.Log;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Call;
@@ -31,6 +32,7 @@ public class AppUpdateHelper {
     public static final int ERROR_STORAGE_LACK = 3;
     //无断点标识
     private static final int NO_POINT_FLAG = -1;
+    private static final String CHANNEL_ID = "AppUpdateChannelId";
 
     private static volatile AppUpdateHelper instance;
     private NotificationCompat.Builder notifyBuilder;
@@ -140,14 +142,14 @@ public class AppUpdateHelper {
         if (receiver != null) return;
         receiver = new ApkReceiver();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MY_PACKAGE_REPLACED);
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
         filter.addDataScheme("package");
         context.registerReceiver(receiver, filter);
     }
 
     private class ApkReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            if (intent != null && Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
+            if (intent != null && Intent.ACTION_PACKAGE_REPLACED.equals(intent.getAction())) {
                 //当前apk替换安装完成，释放资源，初始化缓存数据
                 //清除apk大小记录
                 AppUpdateUtil.clearApkSize(context);
@@ -191,6 +193,7 @@ public class AppUpdateHelper {
                 if (config.isNotify && getNotifyBuilder(context) != null) {
                     int len = (int) (per * 100);
                     notifyBuilder.setProgress(100, len, false);
+                    notifyBuilder.setChannelId(CHANNEL_ID);
                     notifyBuilder.setContentText(String.format("%s%s%%", config.downloadTips, len));
                     manager.notify(NOTIFY_ID, notifyBuilder.build());
                 }
@@ -234,6 +237,13 @@ public class AppUpdateHelper {
                 notifyBuilder.setLargeIcon(BitmapFactory.decodeResource(context.getResources(), config.largeIcon));
             }
             notifyBuilder.setContentText(String.format("%s0%%", config.downloadTips));
+            //android 8.0 notification
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                int importance = NotificationManager.IMPORTANCE_LOW;
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "AppUpdate", importance);
+                manager.createNotificationChannel(channel);
+                notifyBuilder.setChannelId(CHANNEL_ID);
+            }
         }
         return notifyBuilder;
     }

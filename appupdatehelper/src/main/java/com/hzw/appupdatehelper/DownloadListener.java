@@ -56,7 +56,6 @@ abstract class DownloadListener implements Callback {
                 }
 
                 @Override public void error(int errorType) {
-
                 }
             });
             BufferedSource source = body.source();

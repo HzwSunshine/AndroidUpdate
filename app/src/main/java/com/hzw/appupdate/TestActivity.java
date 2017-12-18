@@ -18,7 +18,7 @@ import com.hzw.appupdatehelper.UpdateListener;
 
 public class TestActivity extends AppCompatActivity {
 
-    String url = "http://imtt.dd.qq.com/16891/7259765A7FAE6159A0338A6339CCCB29.apk?fsname=com.hrhb.bdt_3.3.0_15.apk&csr=1bbd";
+    String url = "http://imtt.dd.qq.com/16891/F20F0CB123B2C01698175719B03BAB75.apk?fsname=com.android36kr.app_6.5_17121215.apk&csr=1bbd";
     private ProgressBar progressBar;
     private TextView show;
     private String path;
@@ -30,12 +30,11 @@ public class TestActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         show = findViewById(R.id.progressShow);
 
-        path = getExternalFilesDir("").getPath() + "/xdr33.apk";
+        path = getExternalFilesDir("").getPath() + "/xdwwr133.apk";
 
         findViewById(R.id.download).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplication(), "开始下载", Toast.LENGTH_SHORT).show();
                 checkPermission();
             }
         });
@@ -76,7 +75,7 @@ public class TestActivity extends AppCompatActivity {
                 .smallIcon(R.mipmap.ic_launcher)
                 .title("app的更新")
                 .iconColor(Color.RED)
-                .breakPointDownload(false)
+                .breakPointDownload(true)
                 .downloadTips("下载中")
                 .isNotify(true)
                 .setUpdateListener(new UpdateListener() {
