@@ -142,14 +142,14 @@ public class AppUpdateHelper {
         if (receiver != null) return;
         receiver = new ApkReceiver();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        filter.addAction(Intent.ACTION_MY_PACKAGE_REPLACED);
         filter.addDataScheme("package");
         context.registerReceiver(receiver, filter);
     }
 
     private class ApkReceiver extends BroadcastReceiver {
         @Override public void onReceive(Context context, Intent intent) {
-            if (intent != null && Intent.ACTION_PACKAGE_REPLACED.equals(intent.getAction())) {
+            if (intent != null && Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
                 //当前apk替换安装完成，释放资源，初始化缓存数据
                 //清除apk大小记录
                 AppUpdateUtil.clearApkSize(context);

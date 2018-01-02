@@ -20,9 +20,10 @@ import com.hzw.appupdatehelper.UpdateListener;
 
 public class MainActivity extends AppCompatActivity {
 
-    String url = "http://imtt.dd.qq.com/16891/7259765A7FAE6159A0338A6339CCCB29.apk?fsname=com.hrhb.bdt_3.3.0_15.apk&csr=1bbd";
+    String url = "http://imtt.dd.qq.com/16891/F20F0CB123B2C01698175719B03BAB75.apk?fsname=com.android36kr.app_6.5_17121215.apk&csr=1bbd";
     private ProgressBar progressBar;
     private TextView show;
+    private String path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,17 +31,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         progressBar = findViewById(R.id.progressBar);
         show = findViewById(R.id.progressShow);
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, TestActivity.class));
-            }
-        });
-
         findViewById(R.id.download).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getApplication(), "开始下载", Toast.LENGTH_SHORT).show();
                 checkPermission();
             }
         });
@@ -49,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         float per = AppUpdateHelper.getInstance().getDownloadProgress(this, url);
         progressBar.setProgress((int) (per * 100));
         show.setText(String.valueOf((int) (per * 100)));
+        if (per > 0 && per < 1) {
+            checkPermission();
+        }
     }
 
     private void checkPermission() {
@@ -110,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
                             case AppUpdateHelper.ERROR_PATH_NOT_VALID:
                                 Toast.makeText(getApplication(), "配置的路径不可用", Toast.LENGTH_SHORT).show();
                                 break;
+                            case AppUpdateHelper.ERROR_STORAGE_LACK:
+                                Toast.makeText(getApplicationContext(), "存储空间不够", Toast.LENGTH_SHORT)
+                                        .show();
+                                break;
                         }
                     }
                 }).update();//开始更新
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //当进度条显示界面销毁的时候，不需要再展示进度时，记得调用下此方法，其实就是unBind一下service
+        //当进度条显示界面销毁的时候，不需要再展示进度时，记得调用下此方法，其实就是取消进度，防止内存泄漏
         //activity或fragment中可以在onDestroy（）方法中调用
         //dialog中可以在dialog消失时调用下
         AppUpdateHelper.release();
