@@ -2,10 +2,8 @@ package com.hzw.appupdatehelper;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
@@ -40,7 +38,6 @@ public class AppUpdateHelper {
     private static OkHttpClient client;
     static final int NOTIFY_ID = 1314;
     private UpdateConfig config;
-    private ApkReceiver receiver;
 
     private AppUpdateHelper() {
         client = new OkHttpClient().newBuilder()
@@ -82,23 +79,14 @@ public class AppUpdateHelper {
             config.filePath = apk.getPath();
         } else {
             apk = new File(config.filePath);
-            if (!AppUpdateUtil.isValidPath(apk.getPath())) {//判断配置的路径是否可用
-                releaseHelper(context);
-                if (config.updateListener != null) {
-                    config.updateListener.error(ERROR_PATH_NOT_VALID);
-                }
-                return;
-            }
         }
 
         long apkSize = AppUpdateUtil.getApkSize(context, config.filePath);
         if (apk.exists() && apk.length() == apkSize) {
-            //注册app替换更新广播
-            initReceiver(context);
             //apk存在并且完整，直接执行安装
             AppUpdateUtil.installApk(context, apk.getPath());
         } else if (AppUpdateUtil.getAvailableStorage() < apkSize) {
-            releaseHelper(context);
+            releaseHelper();
             //存储空间不足
             if (config.updateListener != null) {
                 config.updateListener.error(ERROR_STORAGE_LACK);
@@ -118,8 +106,6 @@ public class AppUpdateHelper {
             if (!config.breakPointDownload) {
                 start = NO_POINT_FLAG;
             }
-            //注册app替换更新广播
-            initReceiver(context);
             //开始下载
             startService(context, start);
         }
@@ -136,31 +122,6 @@ public class AppUpdateHelper {
         cancelNotify();
         Intent intent = new Intent(context, AppUpdateService.class);
         context.stopService(intent);
-    }
-
-    private void initReceiver(Context context) {
-        if (receiver != null) return;
-        receiver = new ApkReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_MY_PACKAGE_REPLACED);
-        filter.addDataScheme("package");
-        context.registerReceiver(receiver, filter);
-    }
-
-    private class ApkReceiver extends BroadcastReceiver {
-        @Override public void onReceive(Context context, Intent intent) {
-            if (intent != null && Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
-                //当前apk替换安装完成，释放资源，初始化缓存数据
-                //清除apk大小记录
-                AppUpdateUtil.clearApkSize(context);
-                //删除已安装的安装包
-                File file = new File(config.filePath);
-                if (file.exists()) file.delete();
-                //释放单例
-                releaseHelper(context);
-                receiver = null;
-            }
-        }
     }
 
     void downloadApk(final Context context, long start) {
@@ -204,7 +165,7 @@ public class AppUpdateHelper {
                     config.updateListener.error(errorType);
                 }
                 //释放helper资源
-                releaseHelper(context);
+                releaseHelper();
                 //下载失败时，停止服务
                 stopDownloadService(context);
             }
@@ -268,12 +229,7 @@ public class AppUpdateHelper {
         return false;
     }
 
-    private void releaseHelper(Context context) {
-        //清除已注册的广播
-        if (receiver != null) {
-            context.unregisterReceiver(receiver);
-            receiver = null;
-        }
+    private void releaseHelper() {
         config = null;
         client = null;
         instance = null;
